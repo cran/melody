@@ -1,0 +1,216 @@
+\documentclass{article}
+
+\usepackage{natbib}
+\usepackage{graphics}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+
+%\VignetteIndexEntry{melody}
+
+\begin{document}
+\setkeys{Gin}{width=1.1\textwidth} 
+
+<<foo,include=FALSE,echo=FALSE>>=
+options(keep.source = TRUE, width = 60)
+foo <- packageDescription("melody")
+@
+
+\title{melody: \Sexpr{foo$Title} \\ (Version \Sexpr{foo$Version})}
+\author{
+  David M. Schruth\\ \texttt{dschruth@u.washington.edu}
+}
+\maketitle
+\section{Licensing}
+This package is licensed under the Artistic License v2.0: it is therefore free to use and redistribute, 
+however, we, the copyright holders, wish to maintain primary artistic control over any further development.   
+Please be sure to cite us if you use this package in work leading to publication.
+
+\section{Installation}
+Building the \Rpackage{melody} package from source requires that you have the proper dependency packages, \Rpackage{caroline}, \Rpackage{network}, and \Rpackage{sna}, installed from CRAN. 
+This can typically be accomplished via the following commands from within the R command line environment:
+
+\begin{verbatim}
+install.packages(c('caroline','network','sna'))   
+\end{verbatim}
+
+After a successful installation the \Rpackage{melody} package can be loaded in the normal way:  by starting R and invoking the following \Rfunction{library} command:
+<<loadlib, results=hide>>=
+library(melody)
+@
+
+\section{Introduction}
+\Sexpr{foo$Description}
+
+\section{Data Input}
+
+The basic unit of analysis in the \Rpackage{melody} package is the spectogram: an image representing the variation in spectral density of a (sound) signal over time.  
+This can be represented as a two dimensional matrix of signal intensity values with rows corresponding to different frequency ranges and columns corresponding to different slices of time.  One easy way to import a spectrographic image a matrix in R is to first convert the image into Portable Greymap [PGM] format, where each spectrographic intensity is coded as a greyscale value typically between 0 and 255 (the minimum and maximum values for each pixel).  For an example: we read in an image in the PGM format below:
+
+
+<<sg echo=FALSE>>=
+
+pgm <- readPGM(system.file('extdata','calls','Tarsius-spectrum-Duet.female-Nietsch1998-2b2.pgm', package='melody'))
+dim(pgm)
+
+@
+
+\section{The Spectrogram Object}
+The spectrogram object is essentially just a list composed of at least one element: our spectrogram matrix we just read in via \Rfunction{readPGM}. 
+Additionally, after processing, this list also stores a list of matrices of the partitioned spectrogram units, vectors of various statistics on each of these units, and eventually, after clustering, a similarity matrix between different units.  
+The object is instantiated using the \Rfunction{sg} function and requires only a single matrix as input.  For an example, instantiate a spectrogram object and demonstrate the object structure and basic plotting functionality.
+
+<<sg>>=
+s <- spectrogram.object <- sg(pgm)
+
+str(spectrogram.object)
+
+<<spectrogram>>=
+plot(spectrogram.object)
+@
+\begin{figure}
+\begin{center}
+<<label=fig1,fig=TRUE,echo=FALSE, results=hide, width=8.5, height=5>>=
+<<spectrogram>>
+@
+\end{center}
+\caption{A spectrogram of the female component of a Tarsius spectrum duet (via the 'plot' S3 method)}
+\label{fig:one}
+\end{figure}
+
+
+\subsection{Background vs Foreground Threshold Determination}
+The first somewhat trivial (but important) order of business when creating a spectrogram object is determining an absolute background/foreground threshold greyscale value.  
+This is accomplished using the \Rfunction{threshold} function.  In this example we use a 89 percent of the highest greyscale value as our threshold.
+
+<<bg echo=FALSE>>=
+s <- threshold(s, pct.max = 0.89)
+print(names(s))
+s$bg.threshold
+@
+
+\subsection{Partitioning}
+
+The first substantial step in processing a spectogram is actually breaking it up into separate units for downstream analysis and clustering.  
+This is accomplished by looking for relatively quiet breakpoints in the spectrogram along the time axis.   
+Two variables (in addition to the threshold value) are used to guide this relativistic splitting process: the first is the average row value and the other is the variance in row values.  
+The logic is that background noise will often appear as a light horizontal band punctuated by actual (higher amplitude) signal.  A lambda weighting factor can additionally be used to determine how far down-biased (into the lower frequencies) this additional splitting equation carries.
+
+
+<<part>>=
+s <- partition(s, lambda=5)
+s$n
+length(s$units)
+@ 
+
+<<partitionedspectro>>=
+plot(s)
+@
+\begin{figure}
+\begin{center}
+<<label=fig2,fig=TRUE,echo=FALSE, results=hide, width=8.5, height=5>>=
+<<partitionedspectro>>
+@
+\end{center}
+\caption{A partitioned spectrogram (black bands represent quiet breaks)}
+\label{fig:two}
+\end{figure}
+
+
+\subsection{Unit Statistics}
+The next important step in processing a spectrogram is calculating the simple statistics on the dimensions of each partitioned unit.   
+By default the following statistics are collected:  height (frequency difference), width (time difference), mean y-value (weighted mean frequency), mid x-value (median time value), mid y-value (median frequency). 
+
+
+<<unitstats>>=
+s <- unitstats(s)
+unit.param.names <- grep('^u.*[^sl]$', names(s), value=TRUE)
+print(sapply(unit.param.names, function(x) s[[x]]))
+
+@
+
+\subsection{Spectrogram Cleaning via Unit Filtering }
+Next we demonstrate how the \Rfunction{clean} function removes units depending on if it is too long or too brief temporally, too high or low frequency, or too small of a frequency difference (each unit must be at least 3 pixels high), or if it is too weak (each unit must be at least 1\% of the total amplitude of the entire spectrogram).
+
+<<clean>>=
+s <- clean(s)
+@
+
+
+\section{Unit Level Scoring}
+Next we perform unit level melodic scoring for tone and interval.   
+Tone is currently best calculated using the percentage of pixels below the background threshold ['pctbg'] or how 'white' the unit is: the whiter the unit the less noisy and the more tonal.   
+Interval currently uses the ratio of the absolute change in per column mean-frequency over the difference between the max and min above-threshold frequencies ['ymRpuH'] (thus thick bands will not score higher interval scores than thin bands with the same slope).  
+Each of these scores are averaged over the whole spectrogram and unit-level scores can optionally be weighted by unit-intensity. 
+<<toneinterval>>=
+
+s <- tone(s)
+s$tone
+s <- interval(s)
+s$interval
+@
+
+
+
+\section{Unit Clustering}
+The final processing step is to use all of our new unit level statistics to cluster the units into a mathematical graph where each unit is a node and a match between nodes is an edge.  
+There are currently two ways to match nodes and both involve creating a list of distance matrices for the differences in each statistic between each of the units.  
+The first method averages all of these difference matrices and has a single cut-off value to convert the single valued matrix into a binary adjacency matrix.  
+The second method performs the binary (TRUE/FALSE value) determination first, using an array of limits (one limit per statistic), and then collapsing these binary matrices, using boolean logic, into a single binary adjacency matrix.    
+The resulting matrix, from either method, forms the final clustering graph.  Currently syllable count is merely a count of the different clusters (isolates are also syllables) and repetition is the average degree per cluster (isolates get a score of zero repetition).   
+<<cluster>>=
+s <- cluster(s, method='limits', intensity.weighted=FALSE)  
+s$syllable_ct
+s$repetition
+## weighted by intensity
+s <- cluster(s, method='limits', intensity.weighted=TRUE)  
+s$syllable_ct
+s$repetition
+@
+
+
+
+
+\section{Plotting and Graphing Units}
+The \Rpackage{melody} package also has two convenience functions to plot and graph the processed spectrogram and clustering graph (respectively).
+The \Rfunction{plot} function simply plots the spectrogram and adds annotations appropriately as the spectrogram object is modified.  
+The \Rfunction{graph} function plots a mathematical graph showing the clustering patterns of the units and grouping different syllable types.  
+Colored unit labels along the bottom of the spectrogram correspond to the colored labels in the clustering/repetition graph.
+
+<<spectrogramgraph>>=
+par(mfrow=c(2,1))
+plot(s)
+graph(s)
+@
+
+\begin{figure}
+\begin{center}
+<<label=fig3,fig=TRUE,echo=FALSE, results=hide, width=8.5, height=10>>=
+<<spectrogramgraph>>
+@
+\end{center}
+\caption{spectrogram and graph}
+\label{fig:three}
+\end{figure}
+
+
+
+\begin{thebibliography}{}
+  
+\bibitem[Neitsch \textit{et~al}. (1987)]{Neitsch2087}
+  Nietsch A, Niemitz A (1987)
+  The Vocal-Acoustical Repertoire of Free-Ranging Tarsius-Spectrum. 
+  International Journal of Primatology 8, p 483.
+ \bibitem[Butts \textit{et~al}. (2012)]{Butts2012}
+  Butts, Carter T.  (2008).  ``network: a Package for Managing Relational
+  Data in R.'' Journal of Statistical Software, 24(2).
+ \bibitem[Butts (2010)]{Butts2010}
+  Carter T. Butts (2010). sna: Tools for Social Network Analysis. R
+  package version 2.2-0. http://CRAN.R-project.org/package=sna
+\end{thebibliography}
+
+\end{document}

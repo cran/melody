@@ -1,0 +1,16 @@
+citHeader("To cite package 'melody' in publications use:") 
+desc <- packageDescription("melody") 
+year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", desc$Date) 
+vers <- paste("R package version", desc$Version) 
+title <- desc$Title 
+authDave <- "David Schruth"
+
+citEntry(entry="Manual", 
+	title = title,  
+	author = as.person(authDave), 	
+	year = year, 
+	note = vers, 
+	textVersion = paste(authDave," (", year, "). ", title,". ", vers ,'.', sep=""))
+
+
+

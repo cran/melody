@@ -86,7 +86,7 @@
 
 
 .dist.limits <- nv(
-c(    .52,      .6,    .75,    .0465,   .15,    .42,    .2,    .2,    .55,     .3),
+c(    .5,         .6,    .46,    .07,   .15,    .4,    .2,    .2,    .55,     .3),
 c('shape','intensity','width','ymean','ymid','ylen','ymin','ymax','ymRpuH','pctbg')
 )
 
@@ -162,7 +162,7 @@ c('shape','intensity','width','ymean','ymid','ylen','ymin','ymax','ymRpuH','pctb
     cluster.sizes <- component.dist(sg$graph)$csize;     
     cluster.maxedgect <- .nodes2edges(cluster.sizes)
     sg$c.ct <- components(sg$graph) 
-    #sg$c.ct.ew = weighted.mean(sg$u.pctbg, sg$u.intensity, na.rm=TRUE)
+    #sg$c.ct = weighted.mean(sg$u.pctbg, sg$u.intensity, na.rm=TRUE)
 
     cluster.energies <- sapply(split(sg$u.intensity, unit.clust.membership), mean);
 
@@ -187,7 +187,7 @@ c('shape','intensity','width','ymean','ymid','ylen','ymin','ymax','ymRpuH','pctb
 }
 
 cluster <- function(sg, method=c('limits','avg'), dist.limits = nv(
-c(    .52,      .6,    .75,    .0465,   .15,    .42,    .2,    .2,    .55,     .3),
+c(    .5,         .6,    .46,    .07,   .15,    .4,    .2,    .2,    .55,     .3),
 c('shape','intensity','width','ymean','ymid','ylen','ymin','ymax','ymRpuH','pctbg')
 ), 
 dist.avg=.15, rep.score=c('c.nreppct','c.degpct','cedge.dens'), syl.score=c('c.ct'), intensity.weighted=TRUE){
@@ -213,8 +213,9 @@ dist.avg=.15, rep.score=c('c.nreppct','c.degpct','cedge.dens'), syl.score=c('c.c
       sg$c.degpct.ew <- 0
       sg$c.nreppct.ew <- 0   # prcntintensityRptd
       sg$repetition <- 0
-      sg$syllable_ct <- 0
-      sg$c.ct.ew <- 0
+      sg$syllable_ct <- 1
+      sg$c.ct <- 1
+      sg$c.ct.ew <- 1
                               # aveClustSize
                               # aveReps.group
                               # aveDegree.group

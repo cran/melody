@@ -10,7 +10,7 @@
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
 
-%\VignetteIndexEntry{melody}
+%\VignetteIndexEntry{Tutorial: Tarsius spectrum duet}
 
 \begin{document}
 \setkeys{Gin}{width=1.1\textwidth} 
@@ -22,7 +22,7 @@ foo <- packageDescription("melody")
 
 \title{melody: \Sexpr{foo$Title} \\ (Version \Sexpr{foo$Version})}
 \author{
-  David M. Schruth\\ \texttt{dschruth@u.washington.edu}
+  Dave Schruth\\ \texttt{melody@hominine.net}
 }
 \maketitle
 \section{Licensing}
@@ -89,7 +89,7 @@ This is accomplished using the \Rfunction{threshold} function.  In this example 
 
 <<bg echo=FALSE>>=
 s <- threshold(s, pct.max = 0.89)
-print(names(s))
+names(s)
 s$bg.threshold
 @
 
@@ -127,9 +127,9 @@ By default the following statistics are collected:  height (frequency difference
 
 
 <<unitstats>>=
-s <- unitstats(s)
+s <- unitstats(s, harmonics=TRUE)
 unit.param.names <- grep('^u.*[^sl]$', names(s), value=TRUE)
-print(sapply(unit.param.names, function(x) s[[x]]))
+sapply(unit.param.names, function(x) s[[x]])
 
 @
 

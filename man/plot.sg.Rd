@@ -7,7 +7,7 @@
 This function plots a two dimensional spectrogram object as a heatmap image with default labels of time (x) versus frequency (y).  Depending on which unit stats are available in the object, they will be plotted as annotative markings on the units.  Additionally, a colored sequence of numbers is plotted below the units for later reference in a 'graph' (clustering) plot. 
 }
 \usage{
-\method{plot}{sg}(x, blanks=TRUE, u.ranges=TRUE, u.yzxs=TRUE, label.cex = 0.7, ...)
+\method{plot}{sg}(x, blanks=TRUE, u.ranges=TRUE, u.yzxs=TRUE, label.cex = 0.7, xlab='Time', ylab='Frequency', ...)
 }
 \arguments{
 \item{x}{a spectrogram object}
@@ -15,6 +15,8 @@ This function plots a two dimensional spectrogram object as a heatmap image with
 \item{u.ranges}{boolean specifying if the unit min and max should be indicated with pairs of "-"s }
 \item{u.yzxs}{boolean specifying if the per column y averages should be indicated as a string of "."s}
 \item{label.cex}{character expansion factor for unit labels}
+\item{xlab}{x axis label}
+\item{ylab}{y axis label}
 \item{...}{additional parameters passed on to "plot"}
 }
 \value{

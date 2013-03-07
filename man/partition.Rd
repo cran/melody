@@ -3,10 +3,10 @@
 \alias{partition}
 \title{Partition a Spectrogram}
 \description{
-Split a spectrogram matrix along relatively quiet breakpoints along the temporal axis.
+Split a spectrogram matrix at relatively quiet breakpoints along the temporal axis.
 }
 \usage{
-partition(sg, ms=1, ds=1.666, lambda=5)
+partition(sg, ms=1, ds=1.62, lambda=5)
 }
 \arguments{
 \item{sg}{a spectrogram object.}

@@ -1,10 +1,10 @@
 Package: melody
-Version: 0.4.3
-Date: 2012-12-29
+Version: 0.4.7
+Date: 2013-03-07
 Title: Statistical Methods for the Quantitative Analysis of Song
         Spectrograms
-Author: David M. Schruth <dschruth@u.washington.edu>
-Maintainer: David M. Schruth <dschruth@u.washington.edu>
+Author: Dave Schruth
+Maintainer: Dave Schruth <melody@hominine.net>
 Depends: R (>= 1.8.0), caroline, network, sna, methods
 Suggests: abind
 Description: The melody package is a suite of computer vision tools for
@@ -17,6 +17,7 @@ Description: The melody package is a suite of computer vision tools for
         and repetition clustering) are also currently available.
 License: Artistic-2.0
 LazyLoad: yes
-Packaged: 2012-12-29 18:32:23 UTC; dave
+Packaged: 2013-03-08 22:57:38 UTC; dave
+NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2012-12-29 20:14:39
+Date/Publication: 2013-03-09 17:40:00

@@ -1,7 +1,7 @@
 
-plot.sg <- function(x, blanks=TRUE, u.ranges=TRUE, u.yzxs=TRUE, label.cex=.7, ...){
+plot.sg <- function(x, blanks=TRUE, u.ranges=TRUE, u.yzxs=TRUE, label.cex=.7, xlab="Time", ylab="Frequency", ...){
 
-  image(x=0:x$width, y=0:x$height, z=t(x$x), xlab="time", ylab="frequency", axes=F, ...)
+  image(x=0:x$width, y=0:x$height, z=t(x$x), xlab=xlab, ylab=ylab, axes=F, ...)
   blank.clmns <- rep(x$blank.rls$values, times=x$blank.rls$lengths)
 
   blank.clmn.idx = (1:ncol(x$x))[blank.clmns]  #for plotting!!
@@ -34,7 +34,7 @@ plot.sg <- function(x, blanks=TRUE, u.ranges=TRUE, u.yzxs=TRUE, label.cex=.7, ..
 graph <- function(sg, label.cex=.7, ...){
         #bmp(file=paste(plotPath,'/',vocFileName,"-matchGraph.bmp",sep=""))#height)
         ## at some point fold rainbow colors and labels into one "colabels" named vector
-        plot.network(sg$graph,vertex.cex=sg$u.intensity/mean(sg$u.intensity),
+        plot.network(sg$graph,vertex.cex=sqrt(sg$u.intensity)/sqrt(mean(sg$u.intensity)),
                          vertex.col=rainbow(sg$n,start=0,end=.8),
                          label.col=rainbow(sg$n,start=0,end=.8),
                          displaylabels=T, boxed.labels=F, label.cex=label.cex, ...

@@ -12,10 +12,13 @@ readPGM <- function(file){
   }
   
   id <- readLines(file,1) #first 2 lines
-  #comment <- readLines(file,1) #first 2 lines
-   #need to make this optional ... if there is a # sign in front
-  line <- readLines(file,1) #
-  lineChars <- strsplit(line, " ")[[1]]
+  temp <- readLines(file,1) #first 2 lines
+  if(grepl("^#", temp))  # second line was comment
+    hw.line <- readLines(file,1)
+  else
+    hw.line <- temp     
+  #need to make this optional ... if there is a # sign in front
+  lineChars <- strsplit(hw.line, " ")[[1]]
   lineVect <- lineChars[lineChars != ""]
   w <- as.numeric(lineVect[1])
   h <- as.numeric(lineVect[2])

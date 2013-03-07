@@ -14,7 +14,7 @@ threshold <- function(sg, type=c('bw','div'), pct.max=0.89){
 }
 
 
-partition <- function(sg, ms=1, ds=1.666, lambda=5){
+partition <- function(sg, ms=1, ds=1.62, lambda=5){
 
   sg$blank.rls <- .findBlanks(sg$x, ms=ms, ds=ds, bg.th=sg$bg.threshold, lambda=lambda)
   
@@ -25,7 +25,7 @@ partition <- function(sg, ms=1, ds=1.666, lambda=5){
   return(sg)
 }
 
-.findBlanks <- function(x, ms=1, ds=1.666, bg.th=227, lambda=5, bgrp=.2, bgcp=.5){   
+.findBlanks <- function(x, ms=1, ds=1.62, bg.th=227, lambda=5, bgrp=.2, bgcp=.5){   
 
   if(ds == 0 & ms == 0){
     db <- mb <- 0 # this isn't totally necessary but faster
@@ -150,7 +150,7 @@ unitstats <- function(sg, harmonics=FALSE){
 
 
 
-clean <- function(sg, wlim=c(3,sg$width), ylim=c(0,1), ylen=3, imin=0.01){ #, wpmmin=.05){
+clean <- function(sg, wlim=c(3,sg$width), ylim=c(0,1), ylen=3, imin=0.01){ #, ilim.sd=3){ #, wpmmin=.05){
 
 #  widx <- sg$u.width >= wpmmin * max(sg$u.width)
   wide <- sg$u.width >= wlim[1]                   
@@ -158,16 +158,26 @@ clean <- function(sg, wlim=c(3,sg$width), ylim=c(0,1), ylen=3, imin=0.01){ #, wp
  
   dark <- sapply(sg$units, function(x) any(x < sg$bg.threshold))
 
-  if('u.ylen' %in% names(sg)){
+  unit.stats.avail <- ('u.ylen' %in% names(sg))
+
+  if(unit.stats.avail){
     tall <- sg$u.ylen >= ylen               # tallEnough                    
     high <- sg$u.ymin >= ylim[1] *sg$height # highEnough         
     low  <- sg$u.ymax <= ylim[2] *sg$height # lowEnough #0.999       
-    powr <- sg$u.intensity > imin * sg$intensity  # strongEnough
+    loud <- sg$u.intensity > imin * sg$intensity  # strongEnough
   }else{
-    tall <- high <- low <- powr <- rep(TRUE, sg$n)
+    tall <- high <- low <- loud <- rep(TRUE, sg$n)
   }
 
-  sg$keep <- keep <-  wide & naro & tall & high & low & powr & dark #widx & 
+  keep <- k <- wide & naro & tall & high & low & loud & dark
+
+  # attempt to exclude large outliers that likely didn't get split up well by partition step
+  #if(unit.stats.avail & (sum(keep) >= 5)){
+  #  ## because 'quiet' is relativistic, we do that last after the initial filter
+  #  quiet <- sg$u.intensity[k] < (median(sg$u.intensity[k]) + (ilim.sd * sd(sg$u.intensity[k])))
+  #  keep[k] <- keep[k] & quiet
+  #}
+  #sg$keep <- keep
 
   ## update any slots that start with a "u" 
   for(u in grep('^u',names(sg), value=TRUE))

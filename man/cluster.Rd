@@ -6,7 +6,7 @@ This funtion matches similar units into clusters: simultaneously calculating the
 }
 \usage{
 cluster(sg, method=c('limits','avg'), dist.limits = nv(
-c(   0.52,        0.6,   0.75, 0.0465,  0.15,  0.42,   0.2,   0.2,   0.55,    0.3),
+c(   0.5,        0.6,   0.46, 0.07,  0.15,  0.4,   0.2,   0.2,   0.55,    0.3),
 c('shape','intensity','width','ymean','ymid','ylen','ymin','ymax','ymRpuH','pctbg')
 ), 
 dist.avg=.15, rep.score=c('c.nreppct','c.degpct','cedge.dens'), syl.score=c('c.ct'), intensity.weighted=TRUE)
